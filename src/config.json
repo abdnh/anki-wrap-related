@@ -1,0 +1,9 @@
+{
+    "browser_shortcut": "",
+    "editor_shortcut": "",
+    "search_field": "word",
+    "highlight_field": "sent",
+    "highlight": true,
+    "cloze": true,
+    "increasing_cloze": false
+}
