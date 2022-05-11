@@ -68,6 +68,8 @@ class WrapRelatedDialog(QDialog):
         increasing_cloze = self.config["increasing_cloze"]
         self.form.increasingClozeCheckbox.setChecked(increasing_cloze)
         self.form.increasingClozeCheckbox.setEnabled(cloze)
+        glob_search = self.config["glob_search"]
+        self.form.globCheckBox.setChecked(glob_search)
 
         return super().exec()
 
@@ -84,6 +86,7 @@ class WrapRelatedDialog(QDialog):
         highlight: bool,
         cloze: bool,
         increasing_cloze: bool,
+        glob_search: bool,
     ):
         self.updated_notes = []
         for i, note in enumerate(self.notes):
@@ -95,7 +98,7 @@ class WrapRelatedDialog(QDialog):
                         max=len(self.notes),
                     )
                 )
-            wrap_ops: Sequence[WrapOp] = []
+            wrap_ops: List[WrapOp] = []
             if cloze:
                 if increasing_cloze:
                     wrap_ops.append(ClozeOp(repeat=False))
@@ -104,7 +107,9 @@ class WrapRelatedDialog(QDialog):
             if highlight:
                 # TODO: make color customizable
                 wrap_ops.append(HighlighOp())
-            copied = wrap_related(note, search_field, highlight_field, wrap_ops)
+            copied = wrap_related(
+                note, search_field, highlight_field, wrap_ops, glob_search
+            )
             if copied:
                 note[highlight_field] = copied
                 self.updated_notes.append(note)
@@ -115,6 +120,7 @@ class WrapRelatedDialog(QDialog):
         highlight = self.form.highlightCheckBox.isChecked()
         cloze = self.form.clozeCheckbox.isChecked()
         increasing_cloze = self.form.increasingClozeCheckbox.isChecked()
+        glob_search = self.form.globCheckBox.isChecked()
 
         # save options
         self.config["search_field"] = search_field
@@ -122,6 +128,7 @@ class WrapRelatedDialog(QDialog):
         self.config["highlight"] = highlight
         self.config["cloze"] = cloze
         self.config["increasing_cloze"] = increasing_cloze
+        self.config["glob_search"] = glob_search
         self.mw.addonManager.writeConfig(__name__, self.config)
 
         def on_done(fut: Future):
@@ -139,7 +146,12 @@ class WrapRelatedDialog(QDialog):
         self.mw.progress.set_title(consts.ADDON_NAME)
         self.mw.taskman.run_in_background(
             lambda: self._process_notes(
-                search_field, highlight_field, highlight, cloze, increasing_cloze
+                search_field,
+                highlight_field,
+                highlight,
+                cloze,
+                increasing_cloze,
+                glob_search,
             ),
             on_done=on_done,
         )
