@@ -58,7 +58,7 @@ class ClozeOp(WrapOp):
 def glob_to_re(text: str) -> str:
     """Convert a string containing some special search characters used by Anki to a regex"""
     text = text.replace(".", r"\.")
-    text = text.replace("*", ".*")
+    text = text.replace("*", ".*?")
     text = text.replace("_", ".?")
     return text
 
