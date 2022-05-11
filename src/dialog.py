@@ -1,40 +1,42 @@
 from concurrent.futures import Future
-from typing import List, Optional, Sequence
+from typing import List, Optional
 
-from aqt.qt import *
+from anki.notes import Note
 from aqt import qtmajor
 from aqt.main import AnkiQt
-from anki.notes import Note
+from aqt.qt import *
 from aqt.utils import showWarning
 
-if qtmajor > 5:
-    from .form_qt6 import Ui_Dialog
-else:
-    from .form_qt5 import Ui_Dialog  # type: ignore
 from . import consts
-from .wrap import WrapOp, wrap_related, HighlighOp, ClozeOp
+from .wrap import ClozeOp, HighlighOp, WrapOp, wrap_related
+
+if qtmajor > 5:
+    from .forms.form_qt6 import Ui_Dialog
+else:
+    from .forms.form_qt5 import Ui_Dialog  # type: ignore
 
 PROGRESS_LABEL = "Processed {count} out of {total} note(s)"
 
 
 class WrapRelatedDialog(QDialog):
-    def __init__(self, mw: AnkiQt, parent, notes: List[Note]):
+    def __init__(self, mw: AnkiQt, parent: QWidget, notes: List[Note]):
         super().__init__(parent)
         self.mw = mw
         self.config = mw.addonManager.getConfig(__name__)
         self.notes = notes
+        self.updated_notes: List[Note] = []
         self.setup_ui()
 
-    def setup_ui(self):
+    def setup_ui(self) -> None:
         self.form = Ui_Dialog()
         self.form.setupUi(self)
         self.setWindowTitle(consts.ADDON_NAME)
         qconnect(self.form.processButton.clicked, self.on_process)
         qconnect(
             self.form.clozeCheckbox.toggled,
-            lambda checked: self.form.increasingClozeCheckbox.setEnabled(checked),
+            self.form.increasingClozeCheckbox.setEnabled,
         )
-        self.fields = []
+        self.fields: List[str] = []
         for note in self.notes:
             for field in note.keys():
                 if field not in self.fields:
@@ -73,7 +75,7 @@ class WrapRelatedDialog(QDialog):
 
         return super().exec()
 
-    def _get_field(self, fields: List[str], key) -> Optional[str]:
+    def _get_field(self, fields: List[str], key: str) -> Optional[str]:
         for field in fields:
             if key.lower() == field.lower():
                 return field
@@ -87,12 +89,12 @@ class WrapRelatedDialog(QDialog):
         cloze: bool,
         increasing_cloze: bool,
         glob_search: bool,
-    ):
+    ) -> None:
         self.updated_notes = []
         for i, note in enumerate(self.notes):
             if i % 20 == 0:
                 self.mw.taskman.run_on_main(
-                    lambda: self.mw.progress.update(
+                    lambda i=i: self.mw.progress.update(
                         label=PROGRESS_LABEL.format(count=i, total=len(self.notes)),
                         value=i + 1,
                         max=len(self.notes),
@@ -114,7 +116,7 @@ class WrapRelatedDialog(QDialog):
                 note[highlight_field] = copied
                 self.updated_notes.append(note)
 
-    def on_process(self):
+    def on_process(self) -> None:
         search_field = self.fields[self.form.searchFieldComboBox.currentIndex()]
         highlight_field = self.fields[self.form.highlightFieldComboBox.currentIndex()]
         highlight = self.form.highlightCheckBox.isChecked()
@@ -131,11 +133,11 @@ class WrapRelatedDialog(QDialog):
         self.config["glob_search"] = glob_search
         self.mw.addonManager.writeConfig(__name__, self.config)
 
-        def on_done(fut: Future):
+        def on_done(fut: Future) -> None:
             try:
                 fut.result()
             finally:
-                self.mw.taskman.run_on_main(lambda: self.mw.progress.finish())
+                self.mw.taskman.run_on_main(self.mw.progress.finish)
             self.accept()
 
         self.mw.progress.start(

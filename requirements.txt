@@ -1,6 +1,8 @@
-anki
+anki==2.1.49
 aqt
 pyqt5
 pyqt6
 mypy
 black
+isort
+pylint

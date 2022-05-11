@@ -5,26 +5,26 @@ from anki.notes import Note
 
 try:
     from anki.utils import strip_html
-except:
+except ImportError:
     from anki.utils import stripHTML as strip_html
 
-CLOZE_RE = re.compile(f"(?si)\[\[c(\d+)::.*?\]\]")
+CLOZE_RE = re.compile(r"(?si)\[\[c(\d+)::.*?\]\]")
 
 
 def get_current_cloze_number(note: Note) -> int:
     text = " ".join(note.values())
     text = strip_html(text)
     try:
-        n = max(int(m.group(1)) for m in CLOZE_RE.finditer(text))
-        return n
+        num = max(int(m.group(1)) for m in CLOZE_RE.finditer(text))
+        return num
     except:
         return 0
 
 
-def wrap_in_cloze(note: Note, contents: str, n: int) -> Tuple[int, str]:
-    if not n:
-        n = get_current_cloze_number(note) + 1
-    return n, f"{{{{c{n}::{contents}}}}}"
+def wrap_in_cloze(note: Note, contents: str, num: int) -> Tuple[int, str]:
+    if not num:
+        num = get_current_cloze_number(note) + 1
+    return num, f"{{{{c{num}::{contents}}}}}"
 
 
 class WrapOp:
@@ -47,11 +47,11 @@ class ClozeOp(WrapOp):
 
     def handle(self, note: Note, phrase: str) -> str:
         # TODO: if the phrase is wrapped in clozes, maybe remove them before clozing again?
-        n, replaced = wrap_in_cloze(note, phrase, self.current_cloze)
+        num, replaced = wrap_in_cloze(note, phrase, self.current_cloze)
         if self.repeat:
-            self.current_cloze = n
+            self.current_cloze = num
         else:
-            self.current_cloze = n + 1
+            self.current_cloze = num + 1
         return replaced
 
 
@@ -81,7 +81,9 @@ def wrap_related(
     pattern = re.compile(search)
     for wrap_op in wrap_ops:
         highlight_field_contents = pattern.sub(
-            lambda m: wrap_op.handle(note, m.group(0)),
+            lambda m: wrap_op.handle(  # pylint: disable=cell-var-from-loop
+                note, m.group(0)
+            ),
             highlight_field_contents,
         )
 
