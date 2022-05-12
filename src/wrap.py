@@ -55,30 +55,23 @@ class ClozeOp(WrapOp):
         return replaced
 
 
-def glob_to_re(text: str) -> str:
-    """Convert a string containing some special search characters used by Anki to a regex"""
-    text = text.replace(".", r"\.")
-    text = text.replace("*", ".*?")
-    text = text.replace("_", ".?")
-    return text
-
-
 def wrap_related(
     note: Note,
     search_field: str,
     highlight_field: str,
     wrap_ops: List[WrapOp],
-    glob_search: bool,
+    separate_phrases: bool,
 ) -> str:
     if search_field not in note or highlight_field not in note:
         return ""
     search = strip_html(note[search_field])
-    if glob_search:
-        search = glob_to_re(search)
+    parts = []
+    if separate_phrases:
+        parts = search.split("*")
     else:
-        search = re.escape(search)
+        parts = [search]
+    pattern = re.compile("|".join(re.escape(part) for part in parts))
     highlight_field_contents = note[highlight_field]
-    pattern = re.compile(search)
     for wrap_op in wrap_ops:
         highlight_field_contents = pattern.sub(
             lambda m: wrap_op.handle(  # pylint: disable=cell-var-from-loop

@@ -46,9 +46,9 @@ class Ui_Dialog(object):
         self.processButton = QtWidgets.QPushButton(Dialog)
         self.processButton.setObjectName("processButton")
         self.formLayout_2.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.processButton)
-        self.globCheckBox = QtWidgets.QCheckBox(Dialog)
-        self.globCheckBox.setObjectName("globCheckBox")
-        self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.globCheckBox)
+        self.separatePhrasesCheckBox = QtWidgets.QCheckBox(Dialog)
+        self.separatePhrasesCheckBox.setObjectName("separatePhrasesCheckBox")
+        self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.separatePhrasesCheckBox)
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -65,4 +65,4 @@ class Ui_Dialog(object):
         self.clozeCheckbox.setText(_translate("Dialog", "Cloze"))
         self.increasingClozeCheckbox.setText(_translate("Dialog", "Increasing cloze numbers"))
         self.processButton.setText(_translate("Dialog", "Process"))
-        self.globCheckBox.setText(_translate("Dialog", "Treat search field\'s contents as a search pattern"))
+        self.separatePhrasesCheckBox.setText(_translate("Dialog", "Treat * as a separator for search phrases in search field"))

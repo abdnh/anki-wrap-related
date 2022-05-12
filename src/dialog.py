@@ -70,8 +70,8 @@ class WrapRelatedDialog(QDialog):
         increasing_cloze = self.config["increasing_cloze"]
         self.form.increasingClozeCheckbox.setChecked(increasing_cloze)
         self.form.increasingClozeCheckbox.setEnabled(cloze)
-        glob_search = self.config["glob_search"]
-        self.form.globCheckBox.setChecked(glob_search)
+        separate_phrases = self.config["separate_phrases"]
+        self.form.separatePhrasesCheckBox.setChecked(separate_phrases)
 
         return super().exec()
 
@@ -88,7 +88,7 @@ class WrapRelatedDialog(QDialog):
         highlight: bool,
         cloze: bool,
         increasing_cloze: bool,
-        glob_search: bool,
+        separate_phrases: bool,
     ) -> None:
         self.updated_notes = []
         for i, note in enumerate(self.notes):
@@ -110,7 +110,7 @@ class WrapRelatedDialog(QDialog):
                 # TODO: make color customizable
                 wrap_ops.append(HighlighOp())
             copied = wrap_related(
-                note, search_field, highlight_field, wrap_ops, glob_search
+                note, search_field, highlight_field, wrap_ops, separate_phrases
             )
             if copied:
                 note[highlight_field] = copied
@@ -122,7 +122,7 @@ class WrapRelatedDialog(QDialog):
         highlight = self.form.highlightCheckBox.isChecked()
         cloze = self.form.clozeCheckbox.isChecked()
         increasing_cloze = self.form.increasingClozeCheckbox.isChecked()
-        glob_search = self.form.globCheckBox.isChecked()
+        separate_phrases = self.form.separatePhrasesCheckBox.isChecked()
 
         # save options
         self.config["search_field"] = search_field
@@ -130,7 +130,7 @@ class WrapRelatedDialog(QDialog):
         self.config["highlight"] = highlight
         self.config["cloze"] = cloze
         self.config["increasing_cloze"] = increasing_cloze
-        self.config["glob_search"] = glob_search
+        self.config["separate_phrases"] = separate_phrases
         self.mw.addonManager.writeConfig(__name__, self.config)
 
         def on_done(fut: Future) -> None:
@@ -153,7 +153,7 @@ class WrapRelatedDialog(QDialog):
                 highlight,
                 cloze,
                 increasing_cloze,
-                glob_search,
+                separate_phrases,
             ),
             on_done=on_done,
         )

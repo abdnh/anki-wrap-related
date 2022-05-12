@@ -72,9 +72,9 @@
     </widget>
    </item>
    <item row="1" column="0">
-    <widget class="QCheckBox" name="globCheckBox">
+    <widget class="QCheckBox" name="separatePhrasesCheckBox">
      <property name="text">
-      <string>Treat search field's contents as a search pattern</string>
+      <string>Treat * as a separator for search phrases in search field</string>
      </property>
     </widget>
    </item>
