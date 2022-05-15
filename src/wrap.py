@@ -28,6 +28,9 @@ def wrap_in_cloze(note: Note, contents: str, num: int) -> Tuple[int, str]:
 
 
 class WrapOp:
+    # Whether this operation works by finding & replacing patterns from the search field in the highlight field.
+    by_pattern: bool = True
+
     def handle(self, note: Note, phrase: str) -> str:
         return phrase
 
@@ -55,6 +58,24 @@ class ClozeOp(WrapOp):
         return replaced
 
 
+class ClozeHintOp(WrapOp):
+    by_pattern = False
+
+    def __init__(self, char_count: int):
+        self.char_count = char_count
+
+    def handle(self, note: Note, phrase: str) -> str:
+        phrase = strip_html(phrase)
+        replaced = ""
+        for word in phrase.split():
+            word = (
+                word[: self.char_count]
+                + wrap_in_cloze(note, word[self.char_count :], 0)[1]
+            )
+            replaced += f"{word} "
+        return replaced
+
+
 def wrap_related(
     note: Note,
     search_field: str,
@@ -73,11 +94,14 @@ def wrap_related(
     pattern = re.compile("|".join(re.escape(part) for part in parts))
     highlight_field_contents = note[highlight_field]
     for wrap_op in wrap_ops:
-        highlight_field_contents = pattern.sub(
-            lambda m: wrap_op.handle(  # pylint: disable=cell-var-from-loop
-                note, m.group(0)
-            ),
-            highlight_field_contents,
-        )
+        if wrap_op.by_pattern:
+            highlight_field_contents = pattern.sub(
+                lambda m: wrap_op.handle(  # pylint: disable=cell-var-from-loop
+                    note, m.group(0)
+                ),
+                highlight_field_contents,
+            )
+        else:
+            highlight_field_contents = wrap_op.handle(note, highlight_field_contents)
 
     return highlight_field_contents

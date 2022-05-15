@@ -6,5 +6,7 @@
     "highlight": true,
     "cloze": true,
     "increasing_cloze": false,
-    "separate_phrases": false
+    "separate_phrases": false,
+    "cloze_hint": false,
+    "cloze_hint_char_count": 2
 }

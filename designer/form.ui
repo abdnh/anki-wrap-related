@@ -61,6 +61,29 @@
         </property>
        </widget>
       </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="clozeHintCheckBox">
+        <property name="toolTip">
+         <string>Cloze words in the cloze field</string>
+        </property>
+        <property name="whatsThis">
+         <string/>
+        </property>
+        <property name="text">
+         <string>Cloze Hint</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="clozeHintCharSpinBox">
+        <property name="toolTip">
+         <string>The number of characters to reveal in each word</string>
+        </property>
+        <property name="whatsThis">
+         <string/>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

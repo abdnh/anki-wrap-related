@@ -8,7 +8,7 @@ from aqt.qt import *
 from aqt.utils import showWarning
 
 from . import consts
-from .wrap import ClozeOp, HighlighOp, WrapOp, wrap_related
+from .wrap import ClozeHintOp, ClozeOp, HighlighOp, WrapOp, wrap_related
 
 if qtmajor > 5:
     from .forms.form_qt6 import Ui_Dialog
@@ -35,6 +35,10 @@ class WrapRelatedDialog(QDialog):
         qconnect(
             self.form.clozeCheckbox.toggled,
             self.form.increasingClozeCheckbox.setEnabled,
+        )
+        qconnect(
+            self.form.clozeHintCheckBox.toggled,
+            self.form.clozeHintCharSpinBox.setEnabled,
         )
         self.fields: List[str] = []
         for note in self.notes:
@@ -72,6 +76,11 @@ class WrapRelatedDialog(QDialog):
         self.form.increasingClozeCheckbox.setEnabled(cloze)
         separate_phrases = self.config["separate_phrases"]
         self.form.separatePhrasesCheckBox.setChecked(separate_phrases)
+        cloze_hint = self.config["cloze_hint"]
+        cloze_hint_char_count = self.config["cloze_hint_char_count"]
+        self.form.clozeHintCheckBox.setChecked(cloze_hint)
+        self.form.clozeHintCharSpinBox.setValue(cloze_hint_char_count)
+        self.form.clozeHintCharSpinBox.setEnabled(cloze_hint)
 
         return super().exec()
 
@@ -89,6 +98,8 @@ class WrapRelatedDialog(QDialog):
         cloze: bool,
         increasing_cloze: bool,
         separate_phrases: bool,
+        cloze_hint: bool,
+        cloze_hint_char_count: int,
     ) -> None:
         self.updated_notes = []
         for i, note in enumerate(self.notes):
@@ -101,6 +112,8 @@ class WrapRelatedDialog(QDialog):
                     )
                 )
             wrap_ops: List[WrapOp] = []
+            if cloze_hint:
+                wrap_ops.append(ClozeHintOp(cloze_hint_char_count))
             if cloze:
                 if increasing_cloze:
                     wrap_ops.append(ClozeOp(repeat=False))
@@ -123,6 +136,8 @@ class WrapRelatedDialog(QDialog):
         cloze = self.form.clozeCheckbox.isChecked()
         increasing_cloze = self.form.increasingClozeCheckbox.isChecked()
         separate_phrases = self.form.separatePhrasesCheckBox.isChecked()
+        cloze_hint = self.form.clozeHintCheckBox.isChecked()
+        cloze_hint_char_count = self.form.clozeHintCharSpinBox.value()
 
         # save options
         self.config["search_field"] = search_field
@@ -131,6 +146,9 @@ class WrapRelatedDialog(QDialog):
         self.config["cloze"] = cloze
         self.config["increasing_cloze"] = increasing_cloze
         self.config["separate_phrases"] = separate_phrases
+        self.config["cloze_hint"] = cloze_hint
+        self.config["cloze_hint_char_count"] = cloze_hint_char_count
+
         self.mw.addonManager.writeConfig(__name__, self.config)
 
         def on_done(fut: Future) -> None:
@@ -154,6 +172,8 @@ class WrapRelatedDialog(QDialog):
                 cloze,
                 increasing_cloze,
                 separate_phrases,
+                cloze_hint,
+                cloze_hint_char_count,
             ),
             on_done=on_done,
         )
